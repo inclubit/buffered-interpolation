@@ -1,5 +1,5 @@
 /* global THREE */
-
+import * as THREE from 'three';
 const INITIALIZING = 0;
 const BUFFERING = 1;
 const PLAYING = 2;
