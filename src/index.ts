@@ -1,4 +1,3 @@
-/* global THREE */
 import * as THREE from 'three';
 const INITIALIZING = 0;
 const BUFFERING = 1;
@@ -7,12 +6,20 @@ const PLAYING = 2;
 const MODE_LERP = 0;
 const MODE_HERMITE = 1;
 
-const vectorPool = [];
-const quatPool = [];
-const framePool = [];
+const vectorPool: THREE.Vector3[] = [];
+const quatPool: THREE.Quaternion[] = [];
+const framePool: Frame[] = [];
 
 const getPooledVector = () => vectorPool.shift() || new THREE.Vector3();
 const getPooledQuaternion = () => quatPool.shift() || new THREE.Quaternion();
+
+interface Frame {
+  position: THREE.Vector3,
+  velocity: THREE.Vector3,
+  scale: THREE.Vector3,
+  quaternion: THREE.Quaternion,
+  time: number
+}
 
 const getPooledFrame = () => {
   let frame = framePool.pop();
@@ -24,9 +31,18 @@ const getPooledFrame = () => {
   return frame;
 };
 
-const freeFrame = f => framePool.push(f);
+const freeFrame = (f: Frame): number => framePool.push(f);
 
-class InterpolationBuffer {
+export default class InterpolationBuffer {
+  state: number;
+  buffer: Frame[];
+  bufferTime: number;
+  time: number;
+  mode: number;
+  originFrame: any;
+  position: Frame['position'];
+  quaternion: Frame['quaternion'];
+  scale: Frame['scale'];
   constructor(mode = MODE_LERP, bufferTime = 0.15) {
     this.state = INITIALIZING;
     this.buffer = [];
@@ -40,7 +56,7 @@ class InterpolationBuffer {
     this.scale = new THREE.Vector3(1, 1, 1);
   }
 
-  hermite(target, t, p1, p2, v1, v2) {
+  hermite(target: Frame['position'], t: number, p1: Frame['position'], p2: Frame['position'], v1: Frame['velocity'], v2: Frame['velocity']) {
     const t2 = t * t;
     const t3 = t * t * t;
     const a = 2 * t3 - 3 * t2 + 1;
@@ -54,11 +70,11 @@ class InterpolationBuffer {
     target.add(v2.multiplyScalar(d));
   }
 
-  lerp(target, v1, v2, alpha) {
+  lerp(target: THREE.Vector3, v1: THREE.Vector3, v2: THREE.Vector3, alpha: number) {
     target.lerpVectors(v1, v2, alpha);
   }
 
-  slerp(target, r1, r2, alpha) {
+  slerp(target: THREE.Quaternion, r1: THREE.Quaternion, r2: THREE.Quaternion, alpha: number) {
     target.slerpQuaternions(r1, r2, alpha);
   }
 
@@ -67,7 +83,7 @@ class InterpolationBuffer {
     this.originFrame = this.buffer.shift();
   }
 
-  appendBuffer(position, velocity, quaternion, scale) {
+  appendBuffer(position?: Frame['position'], velocity?: Frame['velocity'], quaternion?: Frame['quaternion'], scale?: Frame['scale']) {
     const tail = this.buffer.length > 0 ? this.buffer[this.buffer.length - 1] : null;
     // update the last entry in the buffer if this is the same frame
     if (tail && tail.time === this.time) {
@@ -99,23 +115,23 @@ class InterpolationBuffer {
     }
   }
 
-  setTarget(position, velocity, quaternion, scale) {
+  setTarget(position: Frame['position'], velocity: Frame['velocity'], quaternion: Frame['quaternion'], scale: Frame['scale']) {
     this.appendBuffer(position, velocity, quaternion, scale);
   }
 
-  setPosition(position, velocity) {
-    this.appendBuffer(position, velocity, null, null);
+  setPosition(position: Frame['position'], velocity: Frame['velocity']) {
+    this.appendBuffer(position, velocity, undefined, undefined);
   }
 
-  setQuaternion(quaternion) {
-    this.appendBuffer(null, null, quaternion, null);
+  setQuaternion(quaternion: Frame['quaternion']) {
+    this.appendBuffer(undefined, undefined, quaternion, undefined);
   }
 
-  setScale(scale) {
-    this.appendBuffer(null, null, null, scale);
+  setScale(scale: Frame['scale']) {
+    this.appendBuffer(undefined, undefined, undefined, scale);
   }
 
-  update(delta) {
+  update(delta: number) {
     if (this.state === INITIALIZING) {
       if (this.buffer.length > 0) {
         this.updateOriginFrameToBufferTail();
@@ -189,5 +205,3 @@ class InterpolationBuffer {
     return this.scale;
   }
 }
-
-module.exports = InterpolationBuffer;

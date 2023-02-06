@@ -3,20 +3,29 @@
   "version": "0.2.5",
   "description": "A class for handling interpolation of networked THREE.js objects.",
   "homepage": "https://github.com/infinitelee/buffered-interpolation",
-  "main": "dist/buffered-interpolation.js",
+  "main": "dist/index.js",
+  "exports":{
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "author": "Kevin Lee <kevin@infinite-lee.com>",
   "license": "MPL-2.0",
   "bugs": {
     "url": "https://github.com/infinitelee/buffered-interpolation/issues"
   },
   "scripts": {
-    "dist": "babel index.js -o dist/buffered-interpolation.js --presets=env && babel index.js -o dist/buffered-interpolation.min.js --presets=minify"
+    "dist": "babel index.js -o dist/buffered-interpolation.js --presets=env && babel index.js -o dist/buffered-interpolation.min.js --presets=minify",
+    "build": "tsup"
   },
   "devDependencies": {
     "@types/three": "^0.149.0",
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
-    "babel-preset-minify": "^0.4.3"
+    "babel-preset-minify": "^0.4.3",
+    "tsup": "^6.5.0"
   },
   "repository": "infinitelee/buffered-interpolation",
   "keywords": [
