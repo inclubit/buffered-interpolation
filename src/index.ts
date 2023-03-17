@@ -119,7 +119,7 @@ export default class InterpolationBuffer {
     this.appendBuffer(position, velocity, quaternion, scale);
   }
 
-  setPosition(position: Frame['position'], velocity: Frame['velocity']) {
+  setPosition(position: Frame['position'], velocity?: Frame['velocity']) {
     this.appendBuffer(position, velocity, undefined, undefined);
   }
 
