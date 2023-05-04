@@ -1,4 +1,6 @@
-import * as THREE from 'three';
+declare global {
+  const THREE: typeof import('three')
+}
 const INITIALIZING = 0;
 const BUFFERING = 1;
 const PLAYING = 2;
