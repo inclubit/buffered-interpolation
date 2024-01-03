@@ -36,15 +36,15 @@ const getPooledFrame = () => {
 const freeFrame = (f: Frame): number => framePool.push(f);
 
 export default class InterpolationBuffer {
-  state: number;
-  buffer: Frame[];
-  bufferTime: number;
-  time: number;
-  mode: number;
-  originFrame: any;
-  position: Frame['position'];
-  quaternion: Frame['quaternion'];
-  scale: Frame['scale'];
+  private state: number;
+  private buffer: Frame[];
+  private bufferTime: number;
+  private time: number;
+  private mode: number;
+  private originFrame: any;
+  private position: Frame['position'];
+  private quaternion: Frame['quaternion'];
+  private scale: Frame['scale'];
   constructor(mode = MODE_LERP, bufferTime = 0.15) {
     this.state = INITIALIZING;
     this.buffer = [];
@@ -58,7 +58,7 @@ export default class InterpolationBuffer {
     this.scale = new THREE.Vector3(1, 1, 1);
   }
 
-  hermite(target: Frame['position'], t: number, p1: Frame['position'], p2: Frame['position'], v1: Frame['velocity'], v2: Frame['velocity']) {
+  private hermite(target: Frame['position'], t: number, p1: Frame['position'], p2: Frame['position'], v1: Frame['velocity'], v2: Frame['velocity']) {
     const t2 = t * t;
     const t3 = t * t * t;
     const a = 2 * t3 - 3 * t2 + 1;
@@ -72,20 +72,20 @@ export default class InterpolationBuffer {
     target.add(v2.multiplyScalar(d));
   }
 
-  lerp(target: THREE.Vector3, v1: THREE.Vector3, v2: THREE.Vector3, alpha: number) {
+  private lerp(target: THREE.Vector3, v1: THREE.Vector3, v2: THREE.Vector3, alpha: number) {
     target.lerpVectors(v1, v2, alpha);
   }
 
-  slerp(target: THREE.Quaternion, r1: THREE.Quaternion, r2: THREE.Quaternion, alpha: number) {
+  private slerp(target: THREE.Quaternion, r1: THREE.Quaternion, r2: THREE.Quaternion, alpha: number) {
     target.slerpQuaternions(r1, r2, alpha);
   }
 
-  updateOriginFrameToBufferTail() {
+  private updateOriginFrameToBufferTail() {
     freeFrame(this.originFrame);
     this.originFrame = this.buffer.shift();
   }
 
-  appendBuffer(position?: Frame['position'], velocity?: Frame['velocity'], quaternion?: Frame['quaternion'], scale?: Frame['scale']) {
+  private appendBuffer(position?: Frame['position'], velocity?: Frame['velocity'], quaternion?: Frame['quaternion'], scale?: Frame['scale']) {
     const tail = this.buffer.length > 0 ? this.buffer[this.buffer.length - 1] : null;
     // update the last entry in the buffer if this is the same frame
     if (tail && tail.time === this.time) {
@@ -131,6 +131,23 @@ export default class InterpolationBuffer {
 
   setScale(scale: Frame['scale']) {
     this.appendBuffer(undefined, undefined, undefined, scale);
+  }
+  
+  /**
+   * Makes the interpolated object use the most recent frame as the current transform, skipping earlier frames.
+   *
+   * Purges the framebuffer.
+   * The most recent frame will be set as originframe (from frame in the interpolation).
+   * This frame will also be set as current transform.
+   * The end result is that the interpolated object "jumps" to the most recent frame, as if not interpolated.
+   */
+  jumpToMostRecentFrame() {
+      while (this.buffer.length > 0) {
+        this.updateOriginFrameToBufferTail();
+      }
+      this.position.copy(this.originFrame.position);
+      this.quaternion.copy(this.originFrame.quaternion);
+      this.scale.copy(this.originFrame.scale);
   }
 
   update(delta: number) {
