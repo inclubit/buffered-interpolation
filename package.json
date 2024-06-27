@@ -22,7 +22,7 @@
     "build:watch": "tsup --watch"
   },
   "devDependencies": {
-    "@types/three": "^0.149.0",
+    "@types/three": "^0.164.0",
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-minify": "^0.4.3",
@@ -40,7 +40,7 @@
     "three",
     "three.js"
   ],
-  "dependencies": {
-    "three": "^0.149.0"
+  "peerDependencies": {
+    "three": "0.x.x"
   }
 }
