@@ -1,6 +1,4 @@
-declare global {
-  const THREE: typeof import('three')
-}
+import * as THREE from 'three';
 const INITIALIZING = 0;
 const BUFFERING = 1;
 const PLAYING = 2;
@@ -8,12 +6,12 @@ const PLAYING = 2;
 const MODE_LERP = 0;
 const MODE_HERMITE = 1;
 
-const vectorPool: THREE.Vector3[] = [];
-const quatPool: THREE.Quaternion[] = [];
+// const vectorPool: THREE.Vector3[] = [];
+// const quatPool: THREE.Quaternion[] = [];
 const framePool: Frame[] = [];
 
-const getPooledVector = () => vectorPool.shift() || new THREE.Vector3();
-const getPooledQuaternion = () => quatPool.shift() || new THREE.Quaternion();
+// const getPooledVector = () => vectorPool.shift() || new THREE.Vector3();
+// const getPooledQuaternion = () => quatPool.shift() || new THREE.Quaternion();
 
 interface Frame {
   position: THREE.Vector3,
